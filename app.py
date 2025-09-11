@@ -23,24 +23,25 @@ def chat(model):
     # Get the message from the POST request JSON data
     data = request.json
     user_message = data.get("message")
+    history = data.get("history", [])
 
     if not user_message:
         return jsonify({"error": "No message provided."}), 400
 
+    if not history:
+        history = [{"role": "system", "content": "You are a helpful assistant."}]
+    history.append({"role": "user", "content": user_message})
+
     try:
         response = client.chat.completions.create(
             model= model,
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": user_message}
-            ],
-            # max_tokens=150,
-            # temperature=0.7,
+            messages=history
         )
         
         # Extract the assistant's message from the response
         assistant_message = response.choices[0].message.content.strip()
-        return jsonify({"response": assistant_message})
+        history.append({"role": "assistant", "content": assistant_message})
+        return jsonify({"response": assistant_message, "history":history})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
