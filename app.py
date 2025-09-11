@@ -41,6 +41,9 @@ def chat(model):
         # Extract the assistant's message from the response
         assistant_message = response.choices[0].message.content.strip()
         history.append({"role": "assistant", "content": assistant_message})
+
+        if len(history) >= 9:
+            history = [history[0]] + history[-10:]
         return jsonify({"response": assistant_message, "history":history})
 
     except Exception as e:
