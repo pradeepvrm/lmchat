@@ -11,8 +11,18 @@
         <div class="chat-box" id="chat-box">
             <!-- Messages will be appended here -->
         </div>
-        <div class="chat-input">
+        <div class="chat-input" id="chat-input-form">
             <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
+            <select id="model-select">
+                <option value="gemini-2.5-flash-lite-preview-06-17">Gemini 2.5 Flash Lite</option>
+                <option value="gpt-5-nano">GPT 5 nano</option>
+                <option value="gpt-5-mini">GPT 5 mini</option>
+                <option value="gpt-oss-20b">GPT-OSS-20B</option>
+                <option value="gpt-oss-120b">GPT-OSS-120B</option>
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                <option value="DeepSeek-V3.1">DeepSeek V3.1</option>
+                
+            </select>
             <button id="send-btn">Send</button>
         </div>
     </div>
@@ -22,8 +32,8 @@
             const chatBox = document.getElementById('chat-box');
             const userInput = document.getElementById('user-input');
             const sendBtn = document.getElementById('send-btn');
-            const form = document.querySelector('.chat-input');
-
+            // const form = document.getElementById('.chat-input-form');
+        
             // Adding messages to chat box
             function addMessage(text, sender) {
                 const messageDiv = document.createElement('div');
@@ -41,6 +51,9 @@
             // Function to send a message to backend
             async function sendMessage() {
                 const message = userInput.value.trim();
+                const modelSelect = document.getElementById('model-select');
+                const selectedModel = modelSelect.value;
+
                 if (!message) return;
 
                 // Add user message to the chatbox
@@ -48,7 +61,9 @@
                 userInput.value = ''; // Clear the input field
 
                 try {
-                    const response = await fetch('/api/chat', {
+                    const apiUrl = `/api/chat/${selectedModel}`;
+
+                    const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

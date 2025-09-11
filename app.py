@@ -12,14 +12,14 @@ client = OpenAI(
     api_key=os.getenv('api_key')
 )
 
-model = 'lightning-ai/gpt-oss-20b'
+# model = 'lightning-ai/gpt-oss-20b'
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
+@app.route('/api/chat/<string:model>', methods=['POST'])
+def chat(model):
     # Get the message from the POST request JSON data
     data = request.json
     user_message = data.get("message")
