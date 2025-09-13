@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import json
 
 load_dotenv()
 
@@ -11,8 +12,6 @@ client = OpenAI(
     base_url=os.getenv('base_url'),
     api_key=os.getenv('api_key')
 )
-
-# model = 'lightning-ai/gpt-oss-20b'
 
 @app.route('/')
 def home():
@@ -32,22 +31,44 @@ def chat(model):
         history = [{"role": "system", "content": "You are a helpful assistant."}]
     history.append({"role": "user", "content": user_message})
 
-    try:
-        response = client.chat.completions.create(
-            model= model,
-            messages=history
-        )
-        
-        # Extract the assistant's message from the response
-        assistant_message = response.choices[0].message.content.strip()
-        history.append({"role": "assistant", "content": assistant_message})
+    def generate(history):
+        try:
+            full_response = ""
+            response = client.chat.completions.create(
+                model= model,
+                messages=history, 
+                stream=True,
+            )
 
-        if len(history) >= 9:
-            history = [history[0]] + history[-10:]
-        return jsonify({"response": assistant_message, "history":history})
+            for chunk in response:
+                if (hasattr(chunk, 'choices') and 
+                    len(chunk.choices) > 0 and 
+                    hasattr(chunk.choices[0], 'delta') and 
+                    hasattr(chunk.choices[0].delta, 'content') and
+                    chunk.choices[0].delta.content is not None):
+                    
+                    content = chunk.choices[0].delta.content
+                    full_response += content
+                    # Send each chunk as JSON
+                    yield f"data: {json.dumps({'content': content, 'type': 'chunk'})}\n\n"
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+
+            history.append({"role": "assistant", "content": full_response})
+
+            if len(history) >= 9:
+                history = [history[0]] + history[-10:]
+
+            yield f"data: {json.dumps({'content': '', 'type': 'end', 'history': history})}\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'content': f'Error: {str(e)}', 'type': 'error'})}\n\n"
+
+    return Response(generate(history), mimetype='text/plain', headers={
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type'
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
