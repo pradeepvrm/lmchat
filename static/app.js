@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.classList.add('bot-message');
             if (isStreaming) {
                 messageDiv.id = 'streaming-message';
-                messageDiv.innerHTML = marked.parse(text); // Raw text for streaming
+                messageDiv.innerHTML = ''; // Raw text for streaming
             } else {
                 messageDiv.innerHTML = marked.parse(text);
                 applySyntaxHighlighting(messageDiv);
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStreamingMessage(content) {
         const streamingDiv = document.getElementById('streaming-message');
         if (streamingDiv) {
-            streamingDiv.innerHTML += content;
+            streamingDiv.textContent += content;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
     }
@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add empty bot message for streaming
         addMessage('', 'bot', true);
         let fullResponse = '';
+        let buffer = '';
 
         try {
             const apiUrl = `/api/chat/${selectedModel}`;
@@ -118,24 +119,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (done) break;
 
                 const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split('\n');
+                buffer += chunk;
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || ''; 
 
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
-                        try {
-                            const data = JSON.parse(line.slice(6));
-                            
-                            if (data.type === 'chunk') {
-                                fullResponse += data.content;
-                                updateStreamingMessage(data.content);
-                            } else if (data.type === 'end') {
-                                finalizeStreamingMessage(fullResponse);
-                                history = data.history;
-                            } else if (data.type === 'error') {
-                                finalizeStreamingMessage(`Error: ${data.content}`);
+                        const jsonStr = line.slice(6).trim();
+                        if (jsonStr) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                
+                                if (data.type === 'chunk') {
+                                    fullResponse += data.content;
+                                    updateStreamingMessage(data.content);
+                                } else if (data.type === 'end') {
+                                    finalizeStreamingMessage(fullResponse);
+                                    history = data.history;
+                                } else if (data.type === 'error') {
+                                    finalizeStreamingMessage(`Error: ${data.content}`);
+                                }
+                            } catch (e) {
+                                console.error('Error parsing JSON:', e);
                             }
-                        } catch (e) {
-                            console.error('Error parsing JSON:', e);
                         }
                     }
                 }

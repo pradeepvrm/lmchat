@@ -48,6 +48,7 @@ def chat(model):
                     chunk.choices[0].delta.content is not None):
                     
                     content = chunk.choices[0].delta.content
+                    print(content, end='') # debugging remove later
                     full_response += content
                     # Send each chunk as JSON
                     yield f"data: {json.dumps({'content': content, 'type': 'chunk'})}\n\n"
