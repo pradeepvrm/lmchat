@@ -1,4 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // marked js config
+    marked.setOptions({
+        highlight: function(code, lang) {
+            if (lang && hljs.getLanguage(lang)) {
+                try {
+                    return hljs.highlight(code, {language: lang}).value;
+                } catch (err) {
+                    console.error('Highlight.js error:', err);
+                }
+            }
+            return hljs.highlightAuto(code).value;
+        },
+        breaks: true,
+        gfm: true,
+        sanitize: false
+    });
+
     const chatBox = document.getElementById('chat-box');
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
@@ -6,6 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let history = [];
     let isStreaming = false;
+
+    function applySyntaxHighlighting(element) {
+        const codeBlocks = element.querySelectorAll('pre code');
+        codeBlocks.forEach((block) => {
+            hljs.highlightElement(block);
+        });
+    }
 
     // Adding messages to chat box
     function addMessage(text, sender, isStreaming = false) {
@@ -21,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 messageDiv.innerHTML = marked.parse(text); // Raw text for streaming
             } else {
                 messageDiv.innerHTML = marked.parse(text);
+                applySyntaxHighlighting(messageDiv);
             }
         }
         chatBox.appendChild(messageDiv);
@@ -42,7 +67,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const streamingDiv = document.getElementById('streaming-message');
         if (streamingDiv) {
             streamingDiv.innerHTML = marked.parse(fullContent);
+            applySyntaxHighlighting(streamingDiv);
             streamingDiv.removeAttribute('id');
+            console.log('msg complete')
         }
     }
 

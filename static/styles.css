@@ -1,6 +1,6 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    background-color: #161616;
+    background-color: #0a0a0a;
     margin: 0;
     padding: 0;
     display: flex;
@@ -20,20 +20,20 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
+    /* border-radius: 12px; */
     overflow: hidden;
     background-color: #ffffff;
 }
 
 /* Chat header styling */
-.chat-header {
+/* .chat-header {
     background-color: #111111;
     color: #ffffff;
     padding: 18px 20px;
     font-size: 1.5rem;
     font-weight: bold;
     text-align: center;
-}
+} */
 
 /* Chat box for messages */
 .chat-box {

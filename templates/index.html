@@ -4,11 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/styles.css">
+    <script src="../static/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Additional popular languages -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>  -->
+
 </head>
 <title>LM Chat</title>
 <body>
     <div class="chat-container">
-        <div class="chat-header">LM Chat</div>
         <div class="chat-box" id="chat-box">
             <!-- Messages will be appended here -->
         </div>
@@ -31,7 +37,5 @@
             <button id="send-btn">Send</button>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
-    <script src="../static/app.js"></script>
 </body>
 </html>
