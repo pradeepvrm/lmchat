@@ -41,17 +41,16 @@ def chat(model):
             )
 
             for chunk in response:
-                if (hasattr(chunk, 'choices') and 
-                    len(chunk.choices) > 0 and 
-                    hasattr(chunk.choices[0], 'delta') and 
-                    hasattr(chunk.choices[0].delta, 'content') and
-                    chunk.choices[0].delta.content is not None):
-                    
+
+                if chunk.choices[0].delta and chunk.choices[0].delta.content:
                     content = chunk.choices[0].delta.content
-                    print(content, end='') # debugging remove later
+                    # print(content, end='') # debugging remove later
                     full_response += content
                     # Send each chunk as JSON
                     yield f"data: {json.dumps({'content': content, 'type': 'chunk'})}\n\n"
+                
+                if chunk.choices[0].finish_reason == "stop":
+                    break
 
 
             history.append({"role": "assistant", "content": full_response})

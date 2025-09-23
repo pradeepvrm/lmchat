@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatBox = document.getElementById('chat-box');
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
-    // const form = document.getElementById('.chat-input-form');
 
     let history = [];
     let isStreaming = false;
@@ -42,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.classList.add('bot-message');
             if (isStreaming) {
                 messageDiv.id = 'streaming-message';
-                messageDiv.innerHTML = ''; // Raw text for streaming
+                messageDiv.innerHTML = '<b>Thinking...</b>';
             } else {
                 messageDiv.innerHTML = marked.parse(text);
                 applySyntaxHighlighting(messageDiv);
@@ -54,10 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Update streaming message
-    function updateStreamingMessage(content) {
+    function updateStreamingMessage(fullContent) {
         const streamingDiv = document.getElementById('streaming-message');
         if (streamingDiv) {
-            streamingDiv.textContent += content;
+            streamingDiv.textContent += fullContent;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
     }
@@ -88,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Disable send button and input during streaming
         isStreaming = true;
         sendBtn.disabled = true;
-        sendBtn.textContent = 'Sending...';
         userInput.disabled = true;
 
         // Add empty bot message for streaming
@@ -131,8 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const data = JSON.parse(line.slice(6));
                                 
                                 if (data.type === 'chunk') {
-                                    fullResponse += data.content;
-                                    updateStreamingMessage(data.content);
+                                    const newContent = data.content;
+                                    fullResponse += newContent;
+                                    // Update in real-time with progressive rendering
+                                    updateStreamingMessage(fullResponse);
                                 } else if (data.type === 'end') {
                                     finalizeStreamingMessage(fullResponse);
                                     history = data.history;
@@ -154,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Re-enable send button and input
             isStreaming = false;
             sendBtn.disabled = false;
-            sendBtn.textContent = 'Send';
             userInput.disabled = false;
             userInput.focus();
         }
