@@ -131,8 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 if (data.type === 'chunk') {
                                     const newContent = data.content;
                                     fullResponse += newContent;
-                                    // Update in real-time with progressive rendering
-                                    updateStreamingMessage(fullResponse);
+                                    updateStreamingMessage(newContent);
                                 } else if (data.type === 'end') {
                                     finalizeStreamingMessage(fullResponse);
                                     history = data.history;
