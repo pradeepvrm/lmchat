@@ -41,14 +41,14 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.classList.add('bot-message');
             if (isStreaming) {
                 messageDiv.id = 'streaming-message';
-                messageDiv.innerHTML = '<b>Thinking...</b>';
+                messageDiv.innerHTML = '<b>Thinking...</b></br>';
             } else {
                 messageDiv.innerHTML = marked.parse(text);
                 applySyntaxHighlighting(messageDiv);
             }
         }
         chatBox.appendChild(messageDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
+        // chatBox.scrollTop = chatBox.scrollHeight;
         return messageDiv;
     }
 
