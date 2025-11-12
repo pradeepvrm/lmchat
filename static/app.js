@@ -41,23 +41,24 @@ document.addEventListener('DOMContentLoaded', () => {
             messageDiv.classList.add('bot-message');
             if (isStreaming) {
                 messageDiv.id = 'streaming-message';
-                messageDiv.innerHTML = '<b>Thinking...</b></br>';
+                messageDiv.innerHTML = marked.parse('**Thinking...**\n');
             } else {
                 messageDiv.innerHTML = marked.parse(text);
                 applySyntaxHighlighting(messageDiv);
             }
         }
         chatBox.appendChild(messageDiv);
-        // chatBox.scrollTop = chatBox.scrollHeight;
         return messageDiv;
     }
 
     // Update streaming message
-    function updateStreamingMessage(fullContent) {
+    function updateStreamingMessage(content) {
         const streamingDiv = document.getElementById('streaming-message');
+        let fullContent = streamingDiv.innerHTML; 
         if (streamingDiv) {
-            streamingDiv.textContent += fullContent;
-            chatBox.scrollTop = chatBox.scrollHeight;
+            fullContent += content;
+            streamingDiv.innerHTML = marked.parse(fullContent);
+            // chatBox.scrollTop = chatBox.scrollHeight;
         }
     }
 
@@ -89,10 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
         sendBtn.disabled = true;
         userInput.disabled = true;
 
-        // Add empty bot message for streaming
+        // empty bot message for streaming
         addMessage('', 'bot', true);
         let fullResponse = '';
-        let buffer = '';
 
         try {
             const apiUrl = `/api/chat/${selectedModel}`;
@@ -105,9 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ message: message, history: history }),
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            // if (!response.ok) {
+            //     throw new Error(`HTTP error! status: ${response.status}`);
+            // }
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -117,30 +117,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (done) break;
 
                 const chunk = decoder.decode(value, { stream: true });
-                buffer += chunk;
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || ''; 
+                const lines = chunk.split('\n');
 
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
-                        const jsonStr = line.slice(6).trim();
-                        if (jsonStr) {
-                            try {
-                                const data = JSON.parse(line.slice(6));
-                                
-                                if (data.type === 'chunk') {
-                                    const newContent = data.content;
-                                    fullResponse += newContent;
-                                    updateStreamingMessage(newContent);
-                                } else if (data.type === 'end') {
-                                    finalizeStreamingMessage(fullResponse);
-                                    history = data.history;
-                                } else if (data.type === 'error') {
-                                    finalizeStreamingMessage(`Error: ${data.content}`);
-                                }
-                            } catch (e) {
-                                console.error('Error parsing JSON:', e);
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            
+                            if (data.type === 'chunk') {
+                                const newContent = data.content;
+                                fullResponse += newContent;
+                                updateStreamingMessage(newContent);
+                            } else if (data.type === 'end') {
+                                finalizeStreamingMessage(fullResponse);
+                                history = data.history;
+                            } else if (data.type === 'error') {
+                                finalizeStreamingMessage(`Error: ${data.content}`);
                             }
+                        } catch (e) {
+                            console.error('Error parsing JSON:', e);
                         }
                     }
                 }
