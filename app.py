@@ -1,12 +1,14 @@
-from flask import Flask, request, jsonify, render_template, Response
+from flask import Flask, request, jsonify, render_template, Response, session, url_for, redirect
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import json
+import auth
 
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = 'your_super_secret_key_here' 
 
 client = OpenAI(
     base_url=os.getenv('base_url'),
@@ -15,7 +17,24 @@ client = OpenAI(
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    if 'user_id' in session:
+        return render_template('index.html')
+    return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = auth.create_session(email, password)
+        
+        if user:
+            session['user_id'] = user['$id']  # Store the user ID in the session
+            return render_template('index.html')
+        else:
+            return f"Login failed: {error}", 400  # Display the error message
+        
+    return render_template('login.html')
 
 @app.route('/api/chat/<string:model>', methods=['POST'])
 def chat(model):
