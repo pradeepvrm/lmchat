@@ -21,6 +21,22 @@ def home():
         return render_template('index.html')
     return redirect(url_for('login'))
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        user = auth.create(name, email, password)
+
+        if user:
+            session['user_id'] = user['$id']
+            return render_template('index.html')
+        else:
+            return f"Sign Up failed", 400
+    return render_template('register.html')
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -29,10 +45,10 @@ def login():
         user = auth.create_session(email, password)
         
         if user:
-            session['user_id'] = user['$id']  # Store the user ID in the session
-            return render_template('index.html')
+            session['user_id'] = user['$id']
+            return redirect(url_for('home'))
         else:
-            return f"Login failed: {error}", 400  # Display the error message
+            return f"Login failed", 400
         
     return render_template('login.html')
 
