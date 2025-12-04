@@ -52,6 +52,11 @@ def login():
         
     return render_template('login.html')
 
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    session.pop('user_id')
+    return redirect(url_for('home'))
+
 @app.route('/api/chat/<string:model>', methods=['POST'])
 def chat(model):
     # Get the message from the POST request JSON data

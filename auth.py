@@ -32,10 +32,3 @@ def create_session(email, password):
 def get_user():
     user = account.get()
     return user
-
-def logout():
-    try:
-        account.delete_sessions()
-        return True
-    finally:
-        print("error in logout!!")
