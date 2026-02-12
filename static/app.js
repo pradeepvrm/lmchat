@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
 
-    let history = [];
+    let currentConversationId = null;
     let isStreaming = false;
 
     function applySyntaxHighlighting(element) {
@@ -102,12 +102,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: message, history: history }),
+                body: JSON.stringify({ 
+                    message: message, 
+                    conversation_id: currentConversationId 
+                }),
             });
-
-            // if (!response.ok) {
-            //     throw new Error(`HTTP error! status: ${response.status}`);
-            // }
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -130,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 updateStreamingMessage(newContent);
                             } else if (data.type === 'end') {
                                 finalizeStreamingMessage(fullResponse);
-                                history = data.history;
+                                currentConversationId = data.conversation_id;
                             } else if (data.type === 'error') {
                                 finalizeStreamingMessage(`Error: ${data.content}`);
                             }
@@ -145,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Streaming error:', error);
             finalizeStreamingMessage('Sorry, something went wrong. Please try again later.');
         } finally {
-            // Re-enable send button and input
+            // Re-enable send button and input field
             isStreaming = false;
             sendBtn.disabled = false;
             userInput.disabled = false;
