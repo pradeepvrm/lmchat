@@ -1,0 +1,111 @@
+<div class="sidebar">
+    <div class="sidebar-header">
+        <button id="new-chat-btn">+ New Chat</button>
+    </div>
+
+    <div class="conversation-list" id="conversation-list">
+        <!-- Conversations will load here -->
+    </div>
+</div>
+
+<style>
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background: #111;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #222;
+}
+
+.sidebar-header {
+    padding: 12px;
+    border-bottom: 1px solid #222;
+}
+
+#new-chat-btn {
+    width: 100%;
+    padding: 10px;
+    background: #222;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#new-chat-btn:hover {
+    background: #333;
+}
+
+.conversation-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.conversation-item {
+    padding: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+.conversation-item:hover {
+    background: #1f1f1f;
+}
+
+.conversation-item.active {
+    background: #2a2a2a;
+}
+</style>
+
+<script>
+let currentConversationId = null;
+
+async function loadConversations() {
+    const res = await fetch("/api/conversations");
+    const conversations = await res.json();
+
+    const list = document.getElementById("conversation-list");
+    list.innerHTML = "";
+
+    conversations.forEach(conv => {
+        const div = document.createElement("div");
+        div.className = "conversation-item";
+        div.textContent = conv.title;
+
+        div.onclick = () => openConversation(conv.id, div);
+
+        list.appendChild(div);
+    });
+}
+
+async function openConversation(conversationId, element) {
+    window.currentConversationId = conversationId;
+
+    // highlight selected
+    document.querySelectorAll(".conversation-item")
+        .forEach(el => el.classList.remove("active"));
+    element.classList.add("active");
+
+    const res = await fetch(`/api/conversations/${conversationId}`);
+    const data = await res.json();
+
+    const chatBox = document.getElementById("chat-box");
+    chatBox.innerHTML = "";
+
+    data.history.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = "message " +
+            (msg.role === "user" ? "user-message" : "bot-message");
+
+        div.innerText = msg.content;
+        chatBox.appendChild(div);
+    });
+}
+
+document.getElementById("new-chat-btn").onclick = () => {
+    currentConversationId = null;
+    document.getElementById("chat-box").innerHTML = "";
+};
+
+window.addEventListener("load", loadConversations);
+</script>

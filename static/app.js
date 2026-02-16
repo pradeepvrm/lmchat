@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
 
-    let currentConversationId = null;
+    window.currentConversationId = null;
     let isStreaming = false;
 
     function applySyntaxHighlighting(element) {
