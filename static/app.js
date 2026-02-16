@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Adding messages to chat box
-    function addMessage(text, sender, isStreaming = false) {
+    window.addMessage = function(text, sender, isStreaming = false) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
         if (sender === 'user') {
