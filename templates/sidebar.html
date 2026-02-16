@@ -79,7 +79,7 @@ async function loadConversations() {
 }
 
 async function openConversation(conversationId, element) {
-    window.currentConversationId = conversationId;
+    currentConversationId = conversationId;
 
     // highlight selected
     document.querySelectorAll(".conversation-item")
@@ -93,13 +93,16 @@ async function openConversation(conversationId, element) {
     chatBox.innerHTML = "";
 
     data.history.forEach(msg => {
-        const div = document.createElement("div");
-        div.className = "message " +
-            (msg.role === "user" ? "user-message" : "bot-message");
+        // const div = document.createElement("div");
+        // div.className = "message " +
+        //     (msg.role === "user" ? "user-message" : "bot-message");
 
-        div.innerText = msg.content;
-        chatBox.appendChild(div);
+        // div.innerHTML = marked.parse(msg.content);
+        // chatBox.appendChild(div);
+
+        addMessage(msg.content, msg.role);
     });
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 document.getElementById("new-chat-btn").onclick = () => {
