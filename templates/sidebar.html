@@ -81,7 +81,6 @@ async function loadConversations() {
 async function openConversation(conversationId, element) {
     currentConversationId = conversationId;
 
-    // highlight selected
     document.querySelectorAll(".conversation-item")
         .forEach(el => el.classList.remove("active"));
     element.classList.add("active");
@@ -93,12 +92,7 @@ async function openConversation(conversationId, element) {
     chatBox.innerHTML = "";
 
     data.history.forEach(msg => {
-        // const div = document.createElement("div");
-        // div.className = "message " +
-        //     (msg.role === "user" ? "user-message" : "bot-message");
-
-        // div.innerHTML = marked.parse(msg.content);
-        // chatBox.appendChild(div);
+        if (msg.role === "system") return;
 
         addMessage(msg.content, msg.role);
     });
