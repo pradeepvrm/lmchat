@@ -22,12 +22,6 @@ client = OpenAI(
 
 @app.route('/')
 def home():
-
-    if 'user_id' not in session:
-        user = auth.create_anonymous_session()
-        session['user_id'] = user['userId']
-        session['session_secret'] = user['secret']
-        print(user)
     return render_template('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -107,7 +101,9 @@ def delete_conversation(conversation_id):
 @app.route('/api/chat/<string:model>', methods=['POST'])
 def chat(model):
     if 'user_id' not in session:
-        return jsonify({"error": "Unauthorized"}), 401
+        user = auth.create_anonymous_session()
+        session['user_id'] = user['userId']
+        session['session_secret'] = user['secret']
     
     user_id = session['user_id']
     data = request.json
