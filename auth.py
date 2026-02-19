@@ -13,8 +13,13 @@ client.set_endpoint(os.getenv('appwrite_endpoint'))
 client.set_project(os.getenv('appwrite_project'))
 client.set_key(os.getenv('appwrite_key'))
 
-account = Account(client)
 users = Users(client)
+
+def get_session_client():
+    client = Client()
+    client.set_endpoint(os.getenv('appwrite_endpoint'))
+    client.set_project(os.getenv('appwrite_project'))
+    return client
 
 def create(name, email, password):
     response = users.create(
@@ -26,9 +31,19 @@ def create(name, email, password):
     return response
 
 def create_session(email, password):
+    account = Account(client)
     response = account.create_email_password_session(email, password)
     return response
 
-def get_user():
-    user = account.get()
-    return user
+def create_anonymous_session():
+    account = Account(client)
+    response = account.create_anonymous_session()
+    return response
+
+def register_from_session(session_secret, name, email, password):
+    client = get_session_client()
+    client.set_session(session_secret)
+    account = Account(client)
+    account.update_name(name)
+    response = account.update_email(email, password)
+    return response

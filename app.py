@@ -22,9 +22,13 @@ client = OpenAI(
 
 @app.route('/')
 def home():
-    if 'user_id' in session:
-        return render_template('index.html')
-    return redirect(url_for('login'))
+
+    if 'user_id' not in session:
+        user = auth.create_anonymous_session()
+        session['user_id'] = user['userId']
+        session['session_secret'] = user['secret']
+        print(user)
+    return render_template('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -32,13 +36,20 @@ def register():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
-        user = auth.create(name, email, password)
 
-        if user:
-            session['user_id'] = user['userId']
-            return render_template('index.html')
-        else:
-            return f"Sign Up failed", 400
+        try:
+            if 'session_secret' in session:
+                auth.register_from_session(session['session_secret'], name, email, password)
+            else:
+                user = auth.create(name, email, password)
+                session['user_id'] = user['userId']
+            
+            return redirect(url_for('home'))
+            
+        except Exception as e:
+            print(f"Error: {e}")
+            return f"Sign Up failed: {str(e)}", 400
+            
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -50,7 +61,6 @@ def login():
         
         if user:
             session['user_id'] = user['userId']
-            # print(user['userId'])
             return redirect(url_for('home'))
         else:
             return f"Login failed", 400
